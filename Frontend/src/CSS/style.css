@@ -18,6 +18,19 @@ body {
 }
 
 .login-container {
+  height: 60vh;
+  width: 75vw;
+  max-width: 1000px;
+  min-width: 300px;
+  border-radius: 1rem;
+  display: flex;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: white;
+  margin: auto;
+}
+
+.signup-container {
   height: 75vh;
   width: 75vw;
   max-width: 1000px;
@@ -85,7 +98,6 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 
 .login-form-tag {

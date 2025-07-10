@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import * as Yup from 'yup';
 import loginImage from '../Images/login-2.png';
 import '../CSS/style.css';
+
+const loginSchema = Yup.object().shape({
+  email: Yup.string().email('Invalid email').required('Email is required'),
+  password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+});
 
 const BruditeLogin = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -23,10 +30,13 @@ const BruditeLogin = () => {
     e.preventDefault();
 
     try {
+      await loginSchema.validate(formData, { abortEarly: false });
+
       const res = await fetch('http://localhost:5000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Your token is: ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(formData),
       });
@@ -35,14 +45,18 @@ const BruditeLogin = () => {
 
       if (res.ok) {
         localStorage.setItem('token', data.token);
-        alert('Login successful! ✅');
+        alert('Login successful!');
         navigate('/dashboard');
       } else {
-        alert(data.message || 'Login failed ❌');
+        alert(data.message || 'Login failed');
       }
-    } catch (error) {
-      console.error('Login Error:', error);
-      alert('Server Error 🚨');
+    } catch (err: any) {
+      if (err.name === 'ValidationError') {
+        alert(err.errors.join('\n'));
+      } else {
+        console.error('Login Error:', err);
+        alert('Server Error');
+      }
     }
   };
 

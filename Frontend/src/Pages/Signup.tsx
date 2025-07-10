@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import * as Yup from 'yup';
 import loginImage from '../Images/login-2.png';
 import '../CSS/style.css';
+
+const signupSchema = Yup.object().shape({
+  username: Yup.string()
+    .min(3, 'Username must be at least 3 characters')
+    .required('Username is required'),
+  email: Yup.string()
+    .email('Invalid email')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+});
 
 const BruditeSignup = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +22,7 @@ const BruditeSignup = () => {
     email: '',
     password: '',
   });
+
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,10 +37,13 @@ const BruditeSignup = () => {
     e.preventDefault();
 
     try {
+      await signupSchema.validate(formData, { abortEarly: false });
+
       const res = await fetch('http://localhost:5000/auth/signup', {
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
+          Authorization: `Your token is: ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(formData),
       });
@@ -35,19 +52,23 @@ const BruditeSignup = () => {
 
       if (res.ok) {
         localStorage.setItem('token', data.token);
-        alert('Signup successful! 🎉');
+        alert('Signup successful!');
         setFormData({ username: '', email: '', password: '' });
       } else {
-        alert(data.message || 'Signup failed ❌');
+        alert(data.message || 'Signup failed');
       }
-    } catch (error) {
-      console.error('Signup Error:', error);
-      alert('Server Error 🚨');
+    } catch (err: any) {
+      if (err.name === 'ValidationError') {
+        alert(err.errors.join('\n')); 
+      } else {
+        console.error('Signup Error:', err);
+        alert('Server Error');
+      }
     }
   };
 
   return (
-    <div className="login-container">
+    <div className="signup-container">
       <div className="left-box-container">
         <img src={loginImage} alt="Login visual" className="left-box-image" />
       </div>
